@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>슬롯 머신 이미지 뽑기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        
+        .container {
+            text-align: center;
+            margin-top: 200px;
+        }
+        
+        h1 {
+            color: #333333;
+        }
+        
+        .image-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .slot-image {
+            max-width: 300px;
+            max-height: 300px;
+            margin: 10px;
+            position: relative;
+            transform: scale(1);
+            transition: transform 0.5s;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        #file-label, #spin-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #333333;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        
+        .slot-image.show-effect {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>슬롯 머신 이미지 뽑기</h1>
+        
+        <div class="image-container">
+            <!-- 이미지를 추가하기 위한 버튼과 input 필드 -->
+            <label id="file-label" for="file-input">이미지 추가하기</label>
+            <input id="file-input" type="file" accept="image/*" multiple>
+        </div>
+        
+        <div class="image-container" id="preview-container">
+            <!-- 추가된 이미지들을 미리 볼 수 있는 영역 -->
+        </div>
+
+        <div class="image-container">
+            <!-- 슬롯 머신 동작을 제어하는 버튼 -->
+            <button id="spin-button">이미지 뽑기</button>
+        </div>
+
+        <div class="image-container" id="result-container">
+            <!-- 슬롯 머신 결과를 보여줄 영역 -->
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const spinButton = document.getElementById('spin-button');
+        const resultContainer = document.getElementById('result-container');
+
+        fileInput.addEventListener('change', handleFileSelect);
+        spinButton.addEventListener('click', handleSpin);
+
+        let images = []; // 추가된 이미지들을 저장하는 배열
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    const imageUrl = event.target.result;
+                    const imageElement = document.createElement('img');
+                    imageElement.classList.add('slot-image');
+                    imageElement.src = imageUrl;
+                    previewContainer.appendChild(imageElement);
+                    images.push(imageUrl); // 이미지를 배열에 저장
+                };
+
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleSpin() {
+            if (images.length > 0) {
+                const spinDuration = 3000; // 슬롯 머신 동작 시간 (3초)
+                const interval = 100; // 이미지 변경 간격 (0.1초)
+
+                let spins = spinDuration / interval; // 동작 횟수
+                let currentImageIndex = 0; // 현재 이미지 인덱스
+
+                const spinInterval = setInterval(() => {
+                    // 이미지 변경
+                    resultContainer.innerHTML = '';
+                    const imageElement = document.createElement('img');
+                    imageElement.classList.add('slot-image');
+                    imageElement.src = images[currentImageIndex];
+                    resultContainer.appendChild(imageElement);
+
+                    currentImageIndex = (currentImageIndex + 1) % images.length; // 다음 이미지 인덱스
+
+                    spins--;
+                    if (spins === 0) {
+                        clearInterval(spinInterval); // 슬롯 머신 동작 종료
+
+                        // 랜덤 이미지 뽑기
+                        const randomIndex = Math.floor(Math.random() * images.length);
+                        resultContainer.innerHTML = '';
+                        const resultImageElement = document.createElement('img');
+                        resultImageElement.classList.add('slot-image');
+                        resultImageElement.src = images[randomIndex];
+                        resultContainer.appendChild(resultImageElement);
+
+                        // 이미지 크기 변환 효과
+                        setTimeout(() => {
+                            resultImageElement.classList.add('show-effect');
+                        }, 100); // 효과가 잘 보이도록 약간의 딜레이 추가
+
+                        setTimeout(() => {
+                            resultImageElement.classList.remove('show-effect');
+                        }, 2000); // 2초 후에 이미지 크기 변환 효과 제거
+                    }
+                }, interval);
+            }
+        }
+    </script>
+</body>
+</html>
